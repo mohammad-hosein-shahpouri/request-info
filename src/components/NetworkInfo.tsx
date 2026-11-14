@@ -1,109 +1,109 @@
-import L from "leaflet";
-import {
-  Fragment,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import { useContext } from "react";
 import { NetworkInfoContext } from "utils/models/Context";
-import "leaflet/dist/leaflet.css";
-import { TimeInfo } from "./TimeInfo";
-import { ClientInfo } from "./ClientInfo";
-import MarkerIcon from "leaflet/dist/images/marker-icon.png";
-import { History } from "./History";
+import { SearchBar } from "./SearchBar";
+import { HeroCard } from "./HeroCard";
+import { MapCard } from "./MapCard";
+import { NetworkCard } from "./NetworkCard";
+import { TimeCard } from "./TimeCard";
+import { ClientCard } from "./ClientCard";
+import { CurrencyCard } from "./CurrencyCard";
+import { BmacButton } from "./BmacButton";
+import { RotateCw, AlertTriangle, Database } from "lucide-react";
+import { DEMO_DATA } from "utils/request/NetworkInformation";
+import { Button } from "./ui/button";
 
 export function NetworkInfo() {
-  const mapRef = useRef<HTMLDivElement>(null);
+  const { Info, loading, error, refetch, SetInfo } = useContext(NetworkInfoContext);
 
-  const { Info } = useContext(NetworkInfoContext);
-  const flagUrl = `${import.meta.env["VITE_FLAG_IMAGE_URL"]}${Info.country_code2}${import.meta.env["VITE_FLAG_IMAGE_TYPE"]}`
-
-  useEffect(() => {
-    var icon = L.icon({
-      iconUrl: MarkerIcon,
-    });
-
-    var map = L.map(mapRef.current!).setView(
-      {
-        lat: Number(Info.latitude),
-        lng: Number(Info.longitude),
-      },
-      13
+  if (loading && !Info) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center space-y-3 px-4 py-16 text-center">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/60 text-muted-foreground">
+          <RotateCw className="h-5 w-5 animate-spin" />
+        </div>
+        <div>
+          <h3 className="text-sm font-medium text-foreground">
+            Detecting Network Intelligence...
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground font-mono">
+            Fetching geolocation, ISP routing, and client telemetry
+          </p>
+        </div>
+      </div>
     );
+  }
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-      map
+  if (error && !Info) {
+    return (
+      <div className="mx-auto my-12 max-w-md rounded-xl border border-border bg-card p-6 text-center shadow-xs">
+        <div className="mx-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-destructive/10 text-destructive">
+          <AlertTriangle className="h-5 w-5 shrink-0" />
+        </div>
+        <h3 className="mt-3 text-sm font-semibold text-foreground">
+          Lookup Request Failed
+        </h3>
+        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+          {error}
+        </p>
+        <p className="mt-1 text-[11px] text-muted-foreground font-mono">
+          Check connection or load sample telemetry.
+        </p>
+
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => refetch()}
+            className="gap-1.5 h-8 text-xs"
+          >
+            <RotateCw className="h-3.5 w-3.5 shrink-0" />
+            <span>Retry Detection</span>
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => SetInfo(DEMO_DATA)}
+            className="gap-1.5 h-8 text-xs"
+          >
+            <Database className="h-3.5 w-3.5 shrink-0" />
+            <span>Load Demo Data</span>
+          </Button>
+        </div>
+      </div>
     );
-
-    L.marker(
-      {
-        lat: Number(Info.latitude),
-        lng: Number(Info.longitude),
-      },
-      { icon }
-    )
-      .addTo(map)
-      .bindPopup("Your Location")
-      .openPopup();
-  },[]);
+  }
 
   return (
-    <Fragment>
-      <div className="w-11/12 lg:w-5/12">
-        <h1 className="text-center mb-0 mt-2">You're connected to:</h1>
-        <h1 className="text-center">{Info.ip}</h1>
-      </div>
-      <div className="w-11/12 lg:w-5/12 flex flex-col">
-        <h2 className="text-center">From {Info.country_name}</h2>
-        <img
-          src={flagUrl}
-          id="flag"
-          alt={Info.country_name}
-          className="rounded-lg"
-        />
-      </div>
-      <div className="w-11/12 lg:w-5/12">
-        <h3 className="text-center mt-2">On Map:</h3>
-        <div className="rounded-lg h-[200px] md:h-[350px] border-3 border-primary dark:border-light" ref={mapRef} id="map"></div>
+    <div className="w-full space-y-4">
+      {/* Top Search Bar */}
+      <SearchBar />
+
+      {/* Hero IP Card */}
+      <HeroCard />
+
+      {/* Bento Grid */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Geographic Map Card (Full width on lg) */}
+        <div className="lg:col-span-2">
+          <MapCard />
+        </div>
+
+        {/* Network & Routing Card */}
+        <NetworkCard />
+
+        {/* Local Time & Timezone Card */}
+        <TimeCard />
+
+        {/* Client & Device Environment Card */}
+        <ClientCard />
+
+        {/* Currency & Regional Locale Card */}
+        <CurrencyCard />
       </div>
 
-      <div className="w-full lg:w-5/12">
-        <h3 className="text-center mt-2">Extra Information:</h3>
-        <div className="flex flex-row justify-between">
-          <h4>Continent:</h4>
-          <h4>{Info.continent_name}</h4>
-        </div>
-        <div className="flex flex-row justify-between">
-          <h4>State:</h4>
-          <h4>{Info.state_prov}</h4>
-        </div>
-        <div className="flex flex-row justify-between">
-          <h4>City:</h4>
-          <h4>{Info.city}</h4>
-        </div>
-        <div className="flex flex-row justify-between">
-          <h4>District:</h4>
-          <h4>{Info.district}</h4>
-        </div>
-        <div className="flex flex-row justify-between">
-          <h4>ISP:</h4>
-          <h4>{Info.isp}</h4>
-        </div>
-        <div className="flex flex-row justify-between">
-          <h4>Internet TLD:</h4>
-          <h4>{Info.country_tld}</h4>
-        </div>
-        <div className="flex flex-row justify-between">
-          <h4>Calling Code:</h4>
-          <h4>{Info.calling_code}</h4>
-        </div>
-        <hr />
-        <TimeInfo />
-        <hr />
-        <ClientInfo />
-        <hr />
-        <History />
-      </div>
-    </Fragment>
+      {/* Buy Me a Coffee Support Card */}
+      <BmacButton />
+    </div>
   );
 }

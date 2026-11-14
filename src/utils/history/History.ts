@@ -4,35 +4,59 @@ import { History } from "../models/History";
 type addToHistoryProps = {
   location: string;
   locationShort: string;
+  ip?: string;
+  isp?: string;
 };
 
 export const LocalStorageKey = "History";
 
-export function AddToHistory({ location, locationShort }: addToHistoryProps) {
-  const now = dayjs(new Date());
-  const time = now.format("HH:mm") 
-  const today = now.format("DD MMMM YYYY") 
+export function AddToHistory({ location, locationShort, ip, isp }: addToHistoryProps) {
+  const now = dayjs();
+  const time = now.format("HH:mm");
+  const today = now.format("DD MMMM YYYY");
 
-  var currentConnection: History = {
+  const currentConnection: History = {
     Location: location,
     LocationShort: locationShort,
     Time: time,
+    IP: ip,
+    ISP: isp,
+    Timestamp: Date.now(),
   };
 
-  var localStorageString = window.localStorage.getItem(LocalStorageKey);
+  let localStorageString = window.localStorage.getItem(LocalStorageKey);
   if (!localStorageString) localStorageString = "{}";
 
-  var localStorageObject = JSON.parse(localStorageString);
-  if (localStorageObject[today])
-    (localStorageObject[today] as History[]).push(currentConnection);
-  else localStorageObject[today] = [currentConnection];
+  try {
+    const localStorageObject = JSON.parse(localStorageString);
+    if (localStorageObject[today]) {
+      const existing = localStorageObject[today] as History[];
+      const isDuplicate = existing.length > 0 && existing[existing.length - 1].IP === ip;
+      if (!isDuplicate) {
+        existing.push(currentConnection);
+      }
+    } else {
+      localStorageObject[today] = [currentConnection];
+    }
 
-  window.localStorage.setItem(
-    LocalStorageKey,
-    JSON.stringify(localStorageObject)
-  );
+    window.localStorage.setItem(
+      LocalStorageKey,
+      JSON.stringify(localStorageObject)
+    );
+  } catch (e) {
+    console.error("Failed to update history in localStorage", e);
+  }
 }
 
 export function GetHistory<TOutput>() {
-  return JSON.parse(window.localStorage.getItem(LocalStorageKey)!) as TOutput;
+  try {
+    const raw = window.localStorage.getItem(LocalStorageKey);
+    return raw ? (JSON.parse(raw) as TOutput) : ({} as TOutput);
+  } catch (e) {
+    return {} as TOutput;
+  }
+}
+
+export function ClearHistory() {
+  window.localStorage.removeItem(LocalStorageKey);
 }

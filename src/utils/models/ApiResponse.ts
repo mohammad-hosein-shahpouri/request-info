@@ -5,8 +5,11 @@ export type ApiResponseType = {
   country_code2: string;
   country_code3: string;
   country_name: string;
+  country_name_official?: string;
   country_capital: string;
+  country_emoji?: string;
   state_prov: string;
+  state_code?: string;
   district: string;
   city: string;
   zipcode: string;
@@ -24,7 +27,7 @@ export type ApiResponseType = {
   connection_type: string;
   organization: string;
 
-  currency: {
+  currency?: {
     code: string;
     name: string;
     symbol: string;
@@ -32,15 +35,16 @@ export type ApiResponseType = {
 
   time_zone: {
     name: string;
-
     offset: number;
-
     current_time: string;
-
     current_time_unix: number;
-
     is_dst: boolean;
-    
     dst_savings: number;
+    current_tz_abbreviation?: string;
+    current_tz_full_name?: string;
   };
+
+  // Additional metadata added by RequestInfo
+  resolved_from?: string;
+  ping_ms?: number;
 };

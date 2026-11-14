@@ -3,121 +3,176 @@
 
 <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <meta name="theme-color" content="#e2e2e2" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#094954" media="(prefers-color-scheme: dark)">
-    <meta name="description" content="An app that shows you some useful information about your ip address" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d9488" />
+    <meta name="description"
+        content="RequestInfo - Modern IP geolocation, network intelligence, and client diagnostics lookup tool." />
+    <link rel="manifest" href="./manifest.json" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@300;400;500;600;700;800&family=Ubuntu+Sans+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
 
-    <meta property="og:site_name" charset="GitHub Pages" />
-    <meta property="og:title" content="IP Information Detector" />
-    <meta property="og:description" content="Detect information about your Ip address" />
+    <meta property="og:site_name" content="RequestInfo" />
+    <meta property="og:title" content="RequestInfo - IP & Network Intelligence" />
+    <meta property="og:description"
+        content="Detect detailed information about your IP address, geolocation, ISP, timezone, and client device." />
 
-    <title>IP Information Detector</title>
+    <title>RequestInfo — IP & Network Intelligence</title>
+
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('requestinfo_theme') || 'system';
+                var isDark = stored === 'dark' || (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.style.colorScheme = 'dark';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.style.colorScheme = 'light';
+                }
+            } catch (e) { }
+        })();
+    </script>
 
     <style>
-         :root {
-            --primary: #094954;
-            --light: #e2e2e2;
+        :root {
+            --bg-light: #f8fafc;
+            --bg-dark: #020817;
+            --primary: #0d9488;
         }
-        
-        * {
-            font-family: 'Roboto';
+
+        body {
+            margin: 0;
+            background-color: var(--bg-light);
+            font-family: 'Ubuntu Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
-        
-        @media (prefers-color-scheme: light) {
-            body {
-                background-color: var(--light);
-            }
-            #loader #earth {
-                border-color: var(--primary) !important;
-                background-color: var(--light);
-            }
-            #loader #earth div {
-                background: url(/RequestInfo/earth-dark.svg);
-            }
-            #loader p {
-                color: var(--primary);
-            }
+
+        html.dark body {
+            background-color: var(--bg-dark);
+            color-scheme: dark;
         }
-        
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: var(--primary);
-            }
-            #loader #earth {
-                border-color: var(--light) !important;
-                background-color: var(--primary);
-            }
-            #loader #earth div {
-                background: url(/RequestInfo/earth-light.svg);
-            }
-            #loader p {
-                color: var(--light);
-            }
-        }
-        
-        #loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+
+        #initial-loader {
+            position: fixed;
+            inset: 0;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.25rem;
+            z-index: 9999;
         }
-        
-        #loader p {
-            text-align: center;
-            font-size: 2rem;
-            white-space: nowrap;
+
+        .radar-spinner {
+            position: relative;
+            width: 72px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
-        #loader #earth {
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            height: 175px;
-            width: 175px;
-            overflow: hidden;
+
+        .radar-ring {
+            position: absolute;
+            inset: 0;
             border-radius: 50%;
-            border: 5px double;
+            border: 2px solid rgba(13, 148, 136, 0.2);
         }
-        
-        #loader #earth div {
-            height: 175px;
-            width: 175px;
-            background-size: 575px;
-            animation-name: EarthRoutation;
-            animation-duration: 15s;
-            animation-iteration-count: infinite;
-            animation-timing-function: linear;
+
+        .radar-ring:nth-child(2) {
+            inset: -12px;
+            border-color: rgba(13, 148, 136, 0.15);
+            animation: pulseRing 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-        
-        @keyframes EarthRoutation {
-            from {
-                background-position-x: 0px;
+
+        .radar-ring:nth-child(3) {
+            inset: -24px;
+            border-color: rgba(13, 148, 136, 0.08);
+            animation: pulseRing 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite 0.6s;
+        }
+
+        .radar-center {
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #0d9488, #0284c7);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(13, 148, 136, 0.6);
+            animation: centerPulse 1.8s ease-in-out infinite;
+        }
+
+        .loader-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        html.dark .loader-title {
+            color: #e2e8f0;
+        }
+
+        .loader-sub {
+            font-size: 0.8125rem;
+            color: #64748b;
+        }
+
+        @keyframes pulseRing {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.9;
             }
-            to {
-                background-position-x: 575px;
+
+            50% {
+                transform: scale(1.08);
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes centerPulse {
+
+            0%,
+            100% {
+                transform: scale(0.9);
+                box-shadow: 0 0 12px rgba(13, 148, 136, 0.4);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 24px rgba(13, 148, 136, 0.8);
             }
         }
     </style>
-
 </head>
 
 <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>You need to enable JavaScript to run RequestInfo.</noscript>
     <div id="react-root">
-        <div id="loader">
-            <div id="earth">
-                <div></div>
+        <div id="initial-loader">
+            <div class="radar-spinner">
+                <div class="radar-ring"></div>
+                <div class="radar-ring"></div>
+                <div class="radar-ring"></div>
+                <div class="radar-center"></div>
             </div>
-            <p>Please Wait...</p>
+            <div style="text-align: center;">
+                <div class="loader-title">
+                    <span>RequestInfo</span>
+                </div>
+                <div class="loader-sub">Detecting network intelligence...</div>
+            </div>
         </div>
     </div>
 
