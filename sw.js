@@ -1,13 +1,10 @@
-const cacheKey = "pwa-cache-v1.0.2-beta";
+const cacheKey = "pwa-cache-v2.0.0";
 var urlsToCache = [
     "/RequestInfo/",
     "/RequestInfo/index.html",
     "/RequestInfo/manifest.json",
     "/RequestInfo/favicon.svg",
-    "/RequestInfo/earth-dark.svg",
-    "/RequestInfo/earth-light.svg",
-    "/RequestInfo/assets/index.26ded8fc.css",
-    "/RequestInfo/assets/index.f545bd95.js",
+    "/RequestInfo/favicon.png",
 ];
 
 self.addEventListener("install", function(event) {
